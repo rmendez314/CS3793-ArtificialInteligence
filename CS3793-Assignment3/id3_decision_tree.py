@@ -1,11 +1,4 @@
-# import all required libraries
-# import numpy as np
-# import copy
-# import math
-# import pandas as pd
-# import pprint
-# import sys
-# from scipy.special import expit
+
 import numpy as np
 import pandas as pd
 
@@ -34,7 +27,7 @@ def ID3(data, features):
     if len(labels) == 1:
         return labels[0]
     # get the best feature
-    best_feature = find_winning_attr(data, features)
+    best_feature = find_winning_attr(data)
     # why do i have to add this, what the heck :(
     if best_feature is None:
         if len(features) == 1:
@@ -95,6 +88,7 @@ def find_entropy_attributes(df, attribute):
     # This gives different features in that attribute (like 'Hot','Cold' in Temperature
     variables = df[attribute].unique()
     entropy2 = 0
+    den = 0
     for variable in variables:
         entropy = 0
         for target_variable in target_variables:
@@ -138,7 +132,8 @@ def get_subtable(data, node, value):
 #     return tree
 
 def build_tree(data, tree=None):
-    # To make the code generic, changing target variable class name  #Here we build our decision tree  #Get attribute with maximum information gain
+    # To make the code generic, changing target variable class name  #Here we build our
+    #   decision tree  #Get attribute with maximum information gain
     decisions = data.keys()[-1]
     # Get distinct value of that attribute e.g Salary is node and Low,Med and High are values
     node = find_winning_attr(data)
@@ -180,3 +175,21 @@ def print_tree(tree, level=0):
         if isinstance(best_feature_subtrees[i], dict):
             # print the dictionary recursively
             print_tree(best_feature_subtrees[i], level + 2)
+
+
+# calculate information gain for a specific feature
+def get_info_gain(data, feature):
+    # get the unique values of the feature
+    values = data[feature].unique()
+    # initialize the info gain to 0
+    info_gain = 0
+    # go through each value of the feature
+    for value in values:
+        # get the data subset for the current value of the feature
+        subset = data[data[feature] == value]
+        # calculate the entropy of the subset
+        subset_entropy = find_entropy(subset)
+        # calculate the info gain using the formula
+        info_gain += (len(subset) / len(data)) * subset_entropy
+    # return the info gain value
+    return find_entropy(data) - info_gain

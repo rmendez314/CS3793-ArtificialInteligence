@@ -28,7 +28,7 @@ def id3_main():
 
     # attr_entropy = id3_decision_tree.find_entropy_attributes(id3_decision_tree.train_data,
     #                                                          id3_decision_tree.train_data.keys()[num])
-    num_attr = id3_decision_tree.train_data.iloc[0]
+    num_attr = len(id3_decision_tree.train_data.keys()) - 1
     keys = id3_decision_tree.train_data.keys()
     for attr in keys:
         print(f"{attr}: {id3_decision_tree.find_entropy_attributes(id3_decision_tree.train_data, attr)}")
@@ -36,9 +36,12 @@ def id3_main():
     # print(f"attr{num} = {attr_entropy}")
 
     winner = id3_decision_tree.find_winning_attr(id3_decision_tree.train_data)
-    print(f"winning attr: {id3_decision_tree.train_data}")
+    print(f"winning attr: {winner}")
 
     print("Train Data:\n")
+    # print(num_attr)
+    features = id3_decision_tree.train_data.keys()[:num_attr]
+    # tree = id3_decision_tree.ID3(id3_decision_tree.train_data, features)
     tree1 = id3_decision_tree.build_tree(id3_decision_tree.train_data.head(20))
     id3_decision_tree.print_tree(tree1)
 
@@ -57,11 +60,11 @@ def id3_main():
     print(f"winning attr: {winner}")
 
     print("Test Data:\n")
-    tree2 = id3_decision_tree.build_tree(id3_decision_tree.train_weather_data)
-    id3_decision_tree.print_tree(tree2)
+    # tree2 = id3_decision_tree.build_tree(id3_decision_tree.train_weather_data)
+    # id3_decision_tree.print_tree(tree2)
 
 
 if __name__ == '__main__':
-    # gradient_descent_main()
-    id3_main()
+    gradient_descent_main()
+    # id3_main()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
