@@ -175,7 +175,17 @@ def print_tree(tree, level=0):
         if isinstance(best_feature_subtrees[i], dict):
             # print the dictionary recursively
             print_tree(best_feature_subtrees[i], level + 2)
+# function to print the decision tree
 
+
+# def print_tree(root, level=0):
+#     # if the node is a leaf node
+#     if root.label is not None:
+#         print('\t' * level, 'Leaf Node:', root.label)
+#     else:
+#         print('\t' * level, 'Node:', root.attribute, '=', root.attr_value)
+#         for child in root.children:
+#             print_tree(child, level + 1)
 
 # calculate information gain for a specific feature
 def get_info_gain(data, feature):
