@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+import pprint
 
 eps = np.finfo(float).eps
 
@@ -13,42 +14,95 @@ train_data = pd.read_csv(id3_train, delim_whitespace=True)
 train_weather_data = pd.read_csv(id3_weather_train, delim_whitespace=True)
 test_data = pd.read_csv(id3_test, delim_whitespace=True)
 
+class Node:
+    def __init__(self, parent=None):
+        self.parent = None
+        self.attribute = None
+        self.label = None
+        self.attr_value = None
+        self.count = None
+        self.children = []
 
-# function to build the decision tree recursively using the ID3 algorithm
-def ID3(data, features):
-    # get the class labels
-    labels = data['class'].unique()
-    # if the data is empty or the features is empty
-    # return the majority class label
-    if len(data) == 0 or len(features) == 0:
-        return get_majority_label(data)
-    # if the data is homogeneous
-    # return the class label
-    if len(labels) == 1:
-        return labels[0]
-    # get the best feature
-    best_feature = find_winning_attr(data)
-    # why do i have to add this, what the heck :(
-    if best_feature is None:
-        if len(features) == 1:
-            best_feature = features[0]
-    # initialize the tree
-    tree = {best_feature: {}}
-    # get the unique values of the best feature
-    values = data[best_feature].unique()
-    # go through each value of the best feature
-    for value in values:
-        # get the data subset for the current value of the best feature
-        subset = data[data[best_feature] == value]
-        # get the best feature subset
-        best_feature_subset = features[:]
-        # remove the best feature from the best feature subset
-        best_feature_subset.remove(best_feature)
-        # build the decision tree for the best feature subset
-        tree[best_feature][value] = ID3(subset, best_feature_subset)
-    # return the tree
-    return tree
-# calculates entropy for data
+
+class DecisionTreeClassifier:
+    """Decision Tree Classifier using ID3 algorithm."""
+
+    def __init__(self, X, feature_names, labels):
+        self.X = X  # features or predictors
+        self.feature_names = feature_names  # name of the features
+        self.labels = labels  # categories
+        self.labelCategories = list(set(labels))  # unique categories
+        # number of instances of each category
+        self.labelCategoriesCount = [list(labels).count(x) for x in self.labelCategories]
+        self.node = None  # nodes
+        # calculate the initial entropy of the system
+        self.entropy = self._get_entropy([x for x in range(len(self.labels))])
+
+
+#function to build a decision tree using id3 algorithm
+def id3(data, attributes, target_attribute_name):
+    root = Node()
+    # If all examples are positive, Return the single-node tree Root, with label = +.
+    # if data['class'].value_counts().min() == len(data):
+    #
+    # # To make the code generic, changing target variable class name
+    # Class = data.keys()[-1]
+    # print(parent_examples)
+    # # If the dataset is empty or the attributes list is empty, return the majority class.
+    # if len(data) == 0 or len(attributes) == 0:
+    #     return get_majority_label(data)
+    # # If all the records in the dataset belongs to same class, return that class.
+    # elif data[Class].nunique() == 1:
+    #     return data[Class].iloc[0]
+    # # If the dataset has no more attributes, return the majority class.
+    # elif len(attributes) == 0:
+    #     return get_majority_label(data)
+    # # If none of the above conditions is true, grow the tree.
+    # else:
+    #     # Get the attribute that maximizes the information gain.
+    #     attribute = find_max_gain(data, attributes)
+    #     # Get the possible values of the attribute.
+    #     values = data[attribute].unique()
+    #     # Create a dictionary to store the subtree built using id3() method for corresponding attribute-value pair.
+    #     tree = {attribute: {}}
+    #     # Iterate over all the values of the attribute.
+    #     for value in values:
+    #         # Get the examples where the attribute has the corresponding value.
+    #         examples = get_subtable(data, attribute, value)
+    #         # If the examples empty, then assign the majority class label to the current node.
+    #         if len(examples) == 0:
+    #             tree[attribute][value] = get_majority_label(data)
+    #         # Else grow a subtree for the current value and add it to the dictionary.
+    #         else:
+    #             remaining_attributes = [i for i in attributes if i != attribute]
+    #             tree[attribute][value] = id3(examples, remaining_attributes, target_attribute_name, attribute)
+    # pprint(tree)
+    # return tree
+
+
+#function to find attribute that maximizes the info gain
+def find_max_gain(data, attribute_list):
+    # To make the code generic, changing target variable class name
+    Class = data.keys()[-1]
+    # Initialize the information gain and attribute
+    info_gain = 0
+    attr = None
+    # Calculate the information gain for each attribute and
+    # return the attribute with maximum information gain
+    for attribute in attribute_list:
+        info_gain_temp = find_entropy_attributes(data, attribute) - find_entropy(data)
+        if info_gain_temp > info_gain:
+            info_gain = info_gain_temp
+            attr = attribute
+    return attr
+
+
+def find_winning_attr(data):
+    entropy_attr = []
+    ig = []
+    for attr in data.keys()[:-1]:
+        ig.append(find_entropy(data) - find_entropy_attributes(data, attr))
+    return data.keys()[:-1][np.argmax(ig)]
 
 
 # get the majority class label
@@ -101,54 +155,28 @@ def find_entropy_attributes(df, attribute):
     return abs(entropy2)
 
 
-def find_winning_attr(data):
-    entropy_attr = []
-    ig = []
-    for attr in data.keys()[:-1]:
-        ig.append(find_entropy(data) - find_entropy_attributes(data, attr))
-    return data.keys()[:-1][np.argmax(ig)]
-
-
 def get_subtable(data, node, value):
     return data[data[node] == value].reset_index(drop=True)
 
 
-# def build_tree(data, attributes):
-#     labels = data.keys()[-1].unique()
-#     if len(data) == 0 or len(attributes) == 0:
-#         return 0
-#     if len(labels) == 1:
-#         return labels[0]
-#     best_attr = find_winning_attr(data)
-#     tree = {best_attr: {}}
-#     print(data[best_attr].head())
-#     values = data[best_attr].unique()
-#     for value in values:
-#         subtable = get_subtable(data, best_attr, value)
-#         best_attr_subset = attributes[:]
-#         best_attr_subset.remove(best_attr)
-#         tree[best_attr][value] = build_tree(subtable, best_attr_subset)
-#
+# def build_tree(data, tree=None):
+#     # To make the code generic, changing target variable class name  #Here we build our
+#     #   decision tree  #Get attribute with maximum information gain
+#     decisions = data.keys()[-1]
+#     # Get distinct value of that attribute e.g Salary is node and Low,Med and High are values
+#     node = find_winning_attr(data)
+#     # Create an empty dictionary to create tree
+#     attr_values = np.unique(data[node])
+#     if tree is None:
+#         tree = {node: {}}
+#         for value in attr_values:
+#             subtable = get_subtable(data, node, value)
+#             dec_value, counts = np.unique(subtable['class'], return_counts=True)
+#             if len(counts) == 1:  # Checking purity of subset
+#                 tree[node][value] = dec_value[0]
+#             else:
+#                 tree[node][value] = build_tree(subtable)  # Calling the function recursively
 #     return tree
-
-def build_tree(data, tree=None):
-    # To make the code generic, changing target variable class name  #Here we build our
-    #   decision tree  #Get attribute with maximum information gain
-    decisions = data.keys()[-1]
-    # Get distinct value of that attribute e.g Salary is node and Low,Med and High are values
-    node = find_winning_attr(data)
-    # Create an empty dictionary to create tree
-    attr_values = np.unique(data[node])
-    if tree is None:
-        tree = {node: {}}
-        for value in attr_values:
-            subtable = get_subtable(data, node, value)
-            dec_value, counts = np.unique(subtable['class'], return_counts=True)
-            if len(counts) == 1:  # Checking purity of subset
-                tree[node][value] = dec_value[0]
-            else:
-                tree[node][value] = build_tree(subtable)  # Calling the function recursively
-    return tree
 
 
 # FUNCTION TO PRINT DICTIONARY recursively
@@ -177,15 +205,6 @@ def print_tree(tree, level=0):
             print_tree(best_feature_subtrees[i], level + 2)
 # function to print the decision tree
 
-
-# def print_tree(root, level=0):
-#     # if the node is a leaf node
-#     if root.label is not None:
-#         print('\t' * level, 'Leaf Node:', root.label)
-#     else:
-#         print('\t' * level, 'Node:', root.attribute, '=', root.attr_value)
-#         for child in root.children:
-#             print_tree(child, level + 1)
 
 # calculate information gain for a specific feature
 def get_info_gain(data, feature):

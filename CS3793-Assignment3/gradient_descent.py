@@ -11,8 +11,6 @@ test = "data/gd-test.dat"
 train_data = pd.read_csv(train,delim_whitespace=True)
 test_data = pd.read_csv(test, delim_whitespace=True)
 
-# Activation Function - implement Sigmoid
-
 
 def activation_function(h):
     # given 'h' compute and return 'z' based on the activation function implemented
