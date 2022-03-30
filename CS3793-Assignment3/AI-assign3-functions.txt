@@ -184,6 +184,67 @@ def print_tree(tree, level=0):
 #         for child in root.children:
 #             print_tree(child, level + 1)
 
+
+# calculate information gain for a specific feature
+def get_info_gain(data, feature):
+    # get the unique values of the feature
+    values = data[feature].unique()
+    # initialize the info gain to 0
+    info_gain = 0
+    # go through each value of the feature
+    for value in values:
+        # get the data subset for the current value of the feature
+        subset = data[data[feature] == value]
+        # calculate the entropy of the subset
+        subset_entropy = find_entropy(subset)
+        # calculate the info gain using the formula
+        info_gain += (len(subset) / len(data)) * subset_entropy
+    # return the info gain value
+    return find_entropy(data) - info_gain
+
+
+
+# function to build a decision tree using id3 algorithm
+def id3(data, attributes, target_attribute_name, parent_examples=None):
+    # If all examples are positive, Return the single-node tree Root, with label = +.
+    if data['class'].value_counts().min() == len(data):
+        return Node(label=data['class'].value_counts().idxmax())
+    # To make the code generic, changing target variable class name
+    Class = data.keys()[-1]
+    # If the dataset is empty or the attributes list is empty, return the majority class.
+    if len(data) == 0 or len(attributes) == 0:
+        return get_majority_label(data)
+    # If all the records in the dataset belongs to same class, return that class.
+    elif data[Class].nunique() == 1:
+        return data[Class].iloc[0]
+    # If the dataset has no more attributes, return the majority class.
+    elif len(attributes) == 0:
+        return get_majority_label(data)
+    # If none of the above conditions is true, grow the tree.
+    else:
+        # Get the attribute that maximizes the information gain.
+        attribute = find_max_gain(data, attributes)
+        # Get the possible values of the attribute.
+        values = data[attribute].unique()
+        # # Create a dictionary to store the subtree built using id3() method for corresponding attribute-value pair.
+        tree = {attribute: {}}
+        # Iterate over all the values of the attribute.
+        for value in values:
+            # Get the examples where the attribute has the corresponding value.
+            examples = get_subtable(data, attribute, value)
+            # If the examples empty, then assign the majority class label to the current node.
+            if len(examples) == 0:
+                tree[attribute][value] = get_majority_label(data)
+            # Else grow a subtree for the current value and add it to the dictionary.
+            else:
+                remaining_attributes = [i for i in attributes if i != attribute]
+                tree[attribute][value] = id3(examples, remaining_attributes, target_attribute_name, attribute)
+            return tree
+
+
+
+
+
 # calculate information gain for a specific feature
 def get_info_gain(data, feature):
     # get the unique values of the feature

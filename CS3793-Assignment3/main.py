@@ -1,5 +1,6 @@
 import id3_decision_tree
 import gradient_descent
+import pprint as pp
 
 
 def gradient_descent_main():
@@ -19,59 +20,32 @@ def gradient_descent_main():
 
 
 def id3_main():
-    num = 2
-    print("Using Train Data:")
-    print("---------------------------------------")
-    entropy = id3_decision_tree.find_entropy(id3_decision_tree.train_data)
-    print(f"entropy: {entropy}")
+    # Main algorithm loop
+    train_attributes = list(id3_decision_tree.train_data)[0:-1]
+    test_attributes = list(id3_decision_tree.test_data)[0:-1]
 
-    # attr_entropy = id3_decision_tree.find_entropy_attributes(id3_decision_tree.train_data,
-    #                                                          id3_decision_tree.train_data.keys()[num])
-    num_attr = len(id3_decision_tree.train_data.keys()) - 1
-    keys = id3_decision_tree.train_data.keys()
-    for attr in keys:
-        print(f"{attr}: {id3_decision_tree.find_entropy_attributes(id3_decision_tree.train_data, attr)}")
-        print(f"info gain for {attr}: {id3_decision_tree.get_info_gain(id3_decision_tree.train_data, attr)}")
-        print()
-
-    majority_label = id3_decision_tree.get_majority_label(id3_decision_tree.train_data)
-    print(f"majority label: {majority_label}")
-    # print(f"attr{num} = {attr_entropy}")
-
-    winner = id3_decision_tree.find_max_gain(id3_decision_tree.train_data, id3_decision_tree.train_data.keys())
-    print(f"winning attr: {winner}")
-
-    print("Train Data:\n")
-    # features = id3_decision_tree.train_data.keys()[:num_attr]
-    # tree = id3_decision_tree.ID3(id3_decision_tree.train_data, features)
-    tree1 = id3_decision_tree.id3(id3_decision_tree.train_data.head(20), id3_decision_tree.train_data.keys(), 'attr5')
-    id3_decision_tree.print_tree(tree1)
+    # ID3 algorithm for the training data
+    print("Decision Tree: Training Data")
+    train_root = id3_decision_tree.TreeNode()
+    id3_decision_tree.id3(id3_decision_tree.train_data, train_root, train_attributes)
+    id3_decision_tree.print_tree(train_root)
 
     print()
 
-    # print("Using Train Weather Data:")
-    # print("---------------------------------------")
-    # entropy = id3_decision_tree.find_entropy(id3_decision_tree.train_weather_data)
-    # print(f"entropy: {entropy}")
-    #
-    # keys = id3_decision_tree.train_weather_data.keys()
-    # for attr in keys:
-    #     print(f"{attr}: {id3_decision_tree.find_entropy_attributes(id3_decision_tree.train_weather_data, attr)}")
-    #     print(f"info gain for {attr}: {id3_decision_tree.get_info_gain(id3_decision_tree.train_weather_data, attr)}")
-    #     print()
-    #
-    # majority_label = id3_decision_tree.get_majority_label(id3_decision_tree.train_weather_data)
-    # print(f"majority label: {majority_label}")
-    #
-    # winner = id3_decision_tree.find_max_gain(id3_decision_tree.train_weather_data, id3_decision_tree.train_weather_data.keys()[0])
-    # print(f"winning attr: {winner}")
-    #
-    # print("Test Data:\n")
-    # tree2 = id3_decision_tree.build_tree(id3_decision_tree.train_weather_data)
-    # id3_decision_tree.print_tree(tree2)
+    # Id3 algorithm for the test data
+    print("Decision Tree: Test Data")
+    test_root = id3_decision_tree.TreeNode()
+    id3_decision_tree.id3(id3_decision_tree.train_data, test_root, test_attributes)
+    id3_decision_tree.print_tree(test_root)
+
+    # gets the accuracy for the training and test data
+    train_accuracy = id3_decision_tree.get_accuracy(train_root, id3_decision_tree.train_data)
+    test_accuracy = id3_decision_tree.get_accuracy(test_root, id3_decision_tree.test_data)
+    print()
+    print("Accuracy on the Train data == ", train_accuracy)
+    print("Accuracy on the Test data == ", test_accuracy)
 
 
 if __name__ == '__main__':
-    # gradient_descent_main()
+    gradient_descent_main()
     id3_main()
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
