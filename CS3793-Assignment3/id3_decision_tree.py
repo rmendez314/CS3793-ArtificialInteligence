@@ -1,7 +1,5 @@
-
 import numpy as np
 import pandas as pd
-import pprint
 
 eps = np.finfo(float).eps
 
@@ -13,6 +11,7 @@ id3_test = "data/id3-test.dat"
 train_data = pd.read_csv(id3_train, delim_whitespace=True)
 train_weather_data = pd.read_csv(id3_weather_train, delim_whitespace=True)
 test_data = pd.read_csv(id3_test, delim_whitespace=True)
+
 
 class Node:
     def __init__(self, parent=None):
@@ -36,51 +35,49 @@ class DecisionTreeClassifier:
         self.labelCategoriesCount = [list(labels).count(x) for x in self.labelCategories]
         self.node = None  # nodes
         # calculate the initial entropy of the system
-        self.entropy = self._get_entropy([x for x in range(len(self.labels))])
+        self.entropy = ([x for x in range(len(self.labels))])
 
 
-#function to build a decision tree using id3 algorithm
-def id3(data, attributes, target_attribute_name):
-    root = Node()
+# function to build a decision tree using id3 algorithm
+def id3(data, attributes, target_attribute_name, parent_examples=None):
     # If all examples are positive, Return the single-node tree Root, with label = +.
-    # if data['class'].value_counts().min() == len(data):
-    #
-    # # To make the code generic, changing target variable class name
-    # Class = data.keys()[-1]
-    # print(parent_examples)
-    # # If the dataset is empty or the attributes list is empty, return the majority class.
-    # if len(data) == 0 or len(attributes) == 0:
-    #     return get_majority_label(data)
-    # # If all the records in the dataset belongs to same class, return that class.
-    # elif data[Class].nunique() == 1:
-    #     return data[Class].iloc[0]
-    # # If the dataset has no more attributes, return the majority class.
-    # elif len(attributes) == 0:
-    #     return get_majority_label(data)
-    # # If none of the above conditions is true, grow the tree.
-    # else:
-    #     # Get the attribute that maximizes the information gain.
-    #     attribute = find_max_gain(data, attributes)
-    #     # Get the possible values of the attribute.
-    #     values = data[attribute].unique()
-    #     # Create a dictionary to store the subtree built using id3() method for corresponding attribute-value pair.
-    #     tree = {attribute: {}}
-    #     # Iterate over all the values of the attribute.
-    #     for value in values:
-    #         # Get the examples where the attribute has the corresponding value.
-    #         examples = get_subtable(data, attribute, value)
-    #         # If the examples empty, then assign the majority class label to the current node.
-    #         if len(examples) == 0:
-    #             tree[attribute][value] = get_majority_label(data)
-    #         # Else grow a subtree for the current value and add it to the dictionary.
-    #         else:
-    #             remaining_attributes = [i for i in attributes if i != attribute]
-    #             tree[attribute][value] = id3(examples, remaining_attributes, target_attribute_name, attribute)
-    # pprint(tree)
-    # return tree
+    if data['class'].value_counts().min() == len(data):
+        return Node()
+    # To make the code generic, changing target variable class name
+    Class = data.keys()[-1]
+    print(parent_examples)
+    # If the dataset is empty or the attributes list is empty, return the majority class.
+    if len(data) == 0 or len(attributes) == 0:
+        return get_majority_label(data)
+    # If all the records in the dataset belongs to same class, return that class.
+    elif data[Class].nunique() == 1:
+        return data[Class].iloc[0]
+    # If the dataset has no more attributes, return the majority class.
+    elif len(attributes) == 0:
+        return get_majority_label(data)
+    # If none of the above conditions is true, grow the tree.
+    else:
+        # Get the attribute that maximizes the information gain.
+        attribute = find_max_gain(data, attributes)
+        # Get the possible values of the attribute.
+        values = data[attribute].unique()
+        # Create a dictionary to store the subtree built using id3() method for corresponding attribute-value pair.
+        tree = {attribute: {}}
+        # Iterate over all the values of the attribute.
+        for value in values:
+            # Get the examples where the attribute has the corresponding value.
+            examples = get_subtable(data, attribute, value)
+            # If the examples empty, then assign the majority class label to the current node.
+            if len(examples) == 0:
+                tree[attribute][value] = get_majority_label(data)
+            # Else grow a subtree for the current value and add it to the dictionary.
+            else:
+                remaining_attributes = [i for i in attributes if i != attribute]
+                tree[attribute][value] = id3(examples, remaining_attributes, target_attribute_name, attribute)
+            return tree
 
 
-#function to find attribute that maximizes the info gain
+# function to find attribute that maximizes the info gain
 def find_max_gain(data, attribute_list):
     # To make the code generic, changing target variable class name
     Class = data.keys()[-1]
@@ -203,6 +200,8 @@ def print_tree(tree, level=0):
         if isinstance(best_feature_subtrees[i], dict):
             # print the dictionary recursively
             print_tree(best_feature_subtrees[i], level + 2)
+
+
 # function to print the decision tree
 
 
